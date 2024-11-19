@@ -3,12 +3,14 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("./models/Users");
 
 const app = express();
 
 app.use(express.json());
 
+const jwtSecret = "asdfasdfasdfafdsfa";
 const bcryptSalt = bcrypt.genSaltSync(10);
 
 // const bcryptSalt = bcrypt.genSaltSync(10);
@@ -50,6 +52,16 @@ app.post("/login", async (req, res) => {
   if (userDoc) {
     const passOk = bcrypt.compareSync(password, userDoc.password);
     if (passOk) {
+      jwt.sign(
+        { email: userDoc.email, id: userDoc._id },
+        jwtSecret,
+        {},
+        (err, token) => {
+          if (err) throw err;
+          res.cookie("token", token).json("pass ok");
+        }
+      );
+
       res.json("password ok");
     } else {
       res.status(422).json("pass not ok");
